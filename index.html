@@ -49,12 +49,131 @@
         th {
             background-color: #f4f4f4;
         }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .help-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #0066cc;
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>Error Handler</h1>
+        <span class="help-link" onclick="openModal()">Help / Instructions</span>
     </header>
+
+    <!-- Add Modal -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h1>CSV Phone Number Analyzer</h1>
+            <p>A web-based tool for analyzing phone number frequencies across multiple CSV files and generating opt-out lists.</p>
+
+            <h2>Features</h2>
+            <ul>
+                <li>Multiple CSV file upload support</li>
+                <li>Customizable row display for previewing CSV contents</li>
+                <li>Phone number frequency counter across all uploaded files</li>
+                <li>Automatic opt-out list generation based on frequency threshold</li>
+                <li>Customizable output filename for the opt-out list</li>
+            </ul>
+
+            <h2>Requirements</h2>
+            <p>Your input CSV files must include:</p>
+            <ul>
+                <li>A "Phone" column header</li>
+                <li>A "Name" column header</li>
+                <li>Data must be comma-separated</li>
+            </ul>
+
+            <h2>How to Use</h2>
+            <ol>
+                <li><strong>Set Your Threshold</strong>
+                    <ul>
+                        <li>Enter a number in the "Threshold for opt-outs" field</li>
+                        <li>This number determines how many occurrences of a phone number trigger an opt-out</li>
+                        <li>Click "Set Threshold" to confirm</li>
+                    </ul>
+                </li>
+                <li><strong>Set Output Filename</strong>
+                    <ul>
+                        <li>Enter your desired filename for the output CSV</li>
+                        <li>The .csv extension will be added automatically</li>
+                        <li>If left blank, defaults to "OptOuts.csv"</li>
+                    </ul>
+                </li>
+                <li><strong>Upload CSV Files</strong>
+                    <ul>
+                        <li>Click the file upload button</li>
+                        <li>Select one or multiple CSV files</li>
+                        <li>A preview of each file will appear showing the first few rows</li>
+                    </ul>
+                </li>
+                <li><strong>Generate Results</strong>
+                    <ul>
+                        <li>Click "Count Phone Numbers & Generate Opt-Outs"</li>
+                        <li>The tool will:
+                            <ul>
+                                <li>Display a table showing all phone numbers and their frequencies</li>
+                                <li>Automatically download a CSV file containing names and phone numbers that exceeded the threshold</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h2>Notes</h2>
+            <ul>
+                <li>Phone numbers must match exactly to be counted as the same number</li>
+                <li>For numbers that appear multiple times with different names, the first occurrence's name will be used</li>
+                <li>Invalid characters in the output filename will be replaced with underscores</li>
+                <li>The tool processes files locally in your browser - no data is sent to any server</li>
+            </ul>
+        </div>
+    </div>
 
     <main>
         <h2>CSV File Upload</h2>
@@ -219,6 +338,23 @@
                     a.setAttribute('download', `${fileName}.csv`);
                     a.click();
                     window.URL.revokeObjectURL(url);
+                }
+            }
+
+            // Add these modal functions
+            function openModal() {
+                document.getElementById('helpModal').style.display = 'block';
+            }
+
+            function closeModal() {
+                document.getElementById('helpModal').style.display = 'none';
+            }
+
+            // Close modal when clicking outside of it
+            window.onclick = function(event) {
+                const modal = document.getElementById('helpModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
                 }
             }
         </script>
