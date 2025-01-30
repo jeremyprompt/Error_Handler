@@ -27,6 +27,28 @@
             border-top: 1px solid #eee;
             color: #666;
         }
+        .file-list {
+            margin: 20px 0;
+        }
+        .csv-preview {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +66,55 @@
             <li>Project 2</li>
             <li>Project 3</li>
         </ul>
+
+        <h2>CSV File Upload</h2>
+        <input type="file" id="csvFile" accept=".csv" multiple>
+        <div id="fileList" class="file-list"></div>
+
+        <script>
+            document.getElementById('csvFile').addEventListener('change', function(e) {
+                const files = e.target.files;
+                const fileList = document.getElementById('fileList');
+
+                for (let file of files) {
+                    const reader = new FileReader();
+                    const preview = document.createElement('div');
+                    preview.className = 'csv-preview';
+                    preview.innerHTML = `<h3>${file.name}</h3>`;
+                    fileList.appendChild(preview);
+
+                    reader.onload = function(event) {
+                        const csvData = event.target.result;
+                        const rows = csvData.split('\n');
+                        const headers = rows[0].split(',');
+                        
+                        let table = '<table><thead><tr>';
+                        headers.forEach(header => {
+                            table += `<th>${header}</th>`;
+                        });
+                        table += '</tr></thead><tbody>';
+
+                        for (let i = 1; i < Math.min(rows.length, 6); i++) {
+                            const cells = rows[i].split(',');
+                            table += '<tr>';
+                            cells.forEach(cell => {
+                                table += `<td>${cell}</td>`;
+                            });
+                            table += '</tr>';
+                        }
+                        table += '</tbody></table>';
+                        
+                        if (rows.length > 6) {
+                            table += '<p>... (showing first 5 rows)</p>';
+                        }
+                        
+                        preview.innerHTML += table;
+                    };
+
+                    reader.readAsText(file);
+                }
+            });
+        </script>
 
         <h2>Contact</h2>
         <p>You can reach me at: <a href="https://github.com/YOUR-USERNAME">GitHub Profile</a></p>
