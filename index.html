@@ -73,6 +73,11 @@
             <input type="number" id="rowCount" min="1" value="5">
             <button onclick="validateRowCount()">Set Threshold</button>
         </div>
+        <div style="margin: 10px 0;">
+            <label for="outputFileName">Output file name:</label>
+            <input type="text" id="outputFileName" value="OptOuts" placeholder="Enter file name">
+            <span>.csv</span>
+        </div>
         <input type="file" id="csvFile" accept=".csv" multiple>
         <button onclick="countPhoneNumbers()">Count Phone Numbers & Generate Opt-Outs</button>
         <div id="phoneCount"></div>
@@ -142,8 +147,8 @@
 
             function countPhoneNumbers() {
                 const phoneCounts = {};
-                const optOuts = new Set(); // Store phone numbers that exceed threshold
-                const optOutDetails = new Map(); // Store name and phone for opt-outs
+                const optOuts = new Set();
+                const optOutDetails = new Map();
                 let phoneColumnIndex = -1;
                 let nameColumnIndex = -1;
 
@@ -204,7 +209,7 @@
                 resultHtml += '</table>';
                 phoneCountDiv.innerHTML = resultHtml;
 
-                // Generate OptOuts.csv if there are any opt-outs
+                // Generate CSV with custom filename
                 if (optOuts.size > 0) {
                     let csvContent = "Name,Phone\n";
                     optOuts.forEach(phone => {
@@ -214,8 +219,14 @@
                     const blob = new Blob([csvContent], { type: 'text/csv' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
+                    
+                    // Get custom filename or use default
+                    let fileName = document.getElementById('outputFileName').value.trim();
+                    fileName = fileName || 'OptOuts'; // Use 'OptOuts' if input is empty
+                    fileName = fileName.replace(/[^a-z0-9]/gi, '_'); // Replace invalid characters
+                    
                     a.setAttribute('href', url);
-                    a.setAttribute('download', 'OptOuts.csv');
+                    a.setAttribute('download', `${fileName}.csv`);
                     a.click();
                     window.URL.revokeObjectURL(url);
                 }
