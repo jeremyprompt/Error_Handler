@@ -69,17 +69,17 @@
 
         <h2>CSV File Upload</h2>
         <div>
-            <label for="rowCount">Number of rows to display:</label>
+            <label for="rowCount">Threshold for opt-outs:</label>
             <input type="number" id="rowCount" min="1" value="5">
-            <button onclick="validateRowCount()">Set Row Count</button>
+            <button onclick="validateRowCount()">Set Threshold</button>
         </div>
         <input type="file" id="csvFile" accept=".csv" multiple>
-        <button onclick="countPhoneNumbers()">Count Phone Numbers</button>
+        <button onclick="countPhoneNumbers()">Count Phone Numbers & Generate Opt-Outs</button>
         <div id="phoneCount"></div>
         <div id="fileList" class="file-list"></div>
 
         <script>
-            let displayRowCount = 5;  // Default value
+            let displayRowCount = 5;  // Now used as threshold for opt-outs
             let csvDataArray = [];  // Store all CSV data
 
             function validateRowCount() {
@@ -142,29 +142,44 @@
 
             function countPhoneNumbers() {
                 const phoneCounts = {};
+                const optOuts = new Set(); // Store phone numbers that exceed threshold
+                const optOutDetails = new Map(); // Store name and phone for opt-outs
                 let phoneColumnIndex = -1;
+                let nameColumnIndex = -1;
 
                 csvDataArray.forEach(csvData => {
                     const rows = csvData.split('\n');
                     const headers = rows[0].split(',');
                     
-                    // Find the Phone column index
+                    // Find the Phone and Name column indices
                     phoneColumnIndex = headers.findIndex(header => 
                         header.trim().toLowerCase() === 'phone'
+                    );
+                    nameColumnIndex = headers.findIndex(header => 
+                        header.trim().toLowerCase() === 'name'
                     );
 
                     if (phoneColumnIndex === -1) {
                         alert('No "Phone" column found in one or more CSV files');
                         return;
                     }
+                    if (nameColumnIndex === -1) {
+                        alert('No "Name" column found in one or more CSV files');
+                        return;
+                    }
 
-                    // Count phone numbers starting from row 1 (skipping headers)
+                    // Count phone numbers and collect names
                     for (let i = 1; i < rows.length; i++) {
                         const cells = rows[i].split(',');
-                        if (cells.length > phoneColumnIndex) {
+                        if (cells.length > Math.max(phoneColumnIndex, nameColumnIndex)) {
                             const phoneNumber = cells[phoneColumnIndex].trim();
+                            const name = cells[nameColumnIndex].trim();
                             if (phoneNumber) {
                                 phoneCounts[phoneNumber] = (phoneCounts[phoneNumber] || 0) + 1;
+                                if (phoneCounts[phoneNumber] >= displayRowCount) {
+                                    optOuts.add(phoneNumber);
+                                    optOutDetails.set(phoneNumber, name);
+                                }
                             }
                         }
                     }
@@ -181,13 +196,29 @@
                 resultHtml += '<tr><th>Phone Number</th><th>Count</th></tr>';
                 
                 Object.entries(phoneCounts)
-                    .sort(([, a], [, b]) => b - a)  // Sort by count in descending order
+                    .sort(([, a], [, b]) => b - a)
                     .forEach(([phone, count]) => {
                         resultHtml += `<tr><td>${phone}</td><td>${count}</td></tr>`;
                     });
                 
                 resultHtml += '</table>';
                 phoneCountDiv.innerHTML = resultHtml;
+
+                // Generate OptOuts.csv if there are any opt-outs
+                if (optOuts.size > 0) {
+                    let csvContent = "Name,Phone\n";
+                    optOuts.forEach(phone => {
+                        csvContent += `${optOutDetails.get(phone)},${phone}\n`;
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.setAttribute('href', url);
+                    a.setAttribute('download', 'OptOuts.csv');
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
             }
         </script>
 
