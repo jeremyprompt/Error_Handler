@@ -116,6 +116,22 @@
         let displayRowCount = 5;  // Now used as threshold for opt-outs
         let csvDataArray = [];  // Store all CSV data
 
+        // Add this at the beginning to ensure the collapsible is initialized
+        document.addEventListener('DOMContentLoaded', function() {
+            const coll = document.getElementsByClassName("collapsible");
+            for (let i = 0; i < coll.length; i++) {
+                coll[i].addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            }
+        });
+
         function validateRowCount() {
             const rowInput = document.getElementById('rowCount');
             const thresholdButton = document.getElementById('thresholdButton');
@@ -274,20 +290,6 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
-        }
-
-        // Add collapsible functionality
-        const coll = document.getElementsByClassName("collapsible");
-        for (let i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                const content = this.nextElementSibling;
-                if (content.style.maxHeight) {
-                    content.style.maxHeight = null;
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
         }
 
         // Add these modal functions
