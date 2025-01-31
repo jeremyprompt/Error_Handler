@@ -101,7 +101,10 @@
             </div>
         </div>
 
-        <div id="phoneCount"></div>
+        <div class="collapsible-section">
+            <button class="collapsible" id="countResults">View Phone Number Counts</button>
+            <div class="content" id="phoneCount"></div>
+        </div>
         <div id="fileList" class="file-list"></div>
     </main>
 
@@ -223,12 +226,14 @@
 
             // Display results
             const phoneCountDiv = document.getElementById('phoneCount');
+            const countResults = document.getElementById('countResults');
+            
             if (Object.keys(phoneCounts).length === 0) {
                 phoneCountDiv.innerHTML = '<p>No phone numbers found or no files uploaded.</p>';
                 return;
             }
 
-            let resultHtml = '<h3>Phone Number Counts:</h3><table>';
+            let resultHtml = '<table>';
             resultHtml += '<tr><th>Phone Number</th><th>Count</th></tr>';
             
             Object.entries(phoneCounts)
@@ -239,6 +244,14 @@
             
             resultHtml += '</table>';
             phoneCountDiv.innerHTML = resultHtml;
+            
+            // Update the collapsible button text to show count
+            const totalNumbers = Object.keys(phoneCounts).length;
+            countResults.textContent = `View Phone Number Counts (${totalNumbers} total)`;
+            
+            // Automatically open the collapsible after counting
+            countResults.classList.add('active');
+            phoneCountDiv.style.maxHeight = phoneCountDiv.scrollHeight + "px";
 
             // Generate CSV with custom filename
             if (optOuts.size > 0) {
@@ -261,6 +274,20 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
+        }
+
+        // Add collapsible functionality
+        const coll = document.getElementsByClassName("collapsible");
+        for (let i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                const content = this.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
         }
 
         // Add these modal functions
