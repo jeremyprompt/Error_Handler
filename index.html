@@ -265,10 +265,6 @@
             const totalNumbers = Object.keys(phoneCounts).length;
             countResults.textContent = `View Phone Number Counts (${totalNumbers} total)`;
             
-            // Automatically open the collapsible after counting
-            countResults.classList.add('active');
-            phoneCountDiv.style.maxHeight = phoneCountDiv.scrollHeight + "px";
-
             // Generate CSV with custom filename
             if (optOuts.size > 0) {
                 let csvContent = "Name,Phone\n";
