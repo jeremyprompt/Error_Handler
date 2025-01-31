@@ -4,119 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Error Handler</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #eee;
-        }
-        main {
-            padding: 20px 0;
-        }
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            border-top: 1px solid #eee;
-            color: #666;
-        }
-        .file-list {
-            margin: 20px 0;
-        }
-        .csv-preview {
-            margin: 15px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 800px;
-            border-radius: 5px;
-            position: relative;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .help-link {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #0066cc;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        /* Threshold button styles */
-        #thresholdButton {
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #thresholdButton.set {
-            background-color: #4CAF50;
-        }
-
-        #thresholdButton:hover {
-            opacity: 0.9;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -195,198 +83,202 @@
     </div>
 
     <main>
-        <h2>CSV File Upload</h2>
-        <div>
-            <label for="rowCount">Threshold for opt-outs:</label>
-            <input type="number" id="rowCount" min="1" value="5">
-            <button id="thresholdButton" onclick="validateRowCount()">Set Threshold</button>
+        <div class="input-section">
+            <h2>CSV File Upload</h2>
+            <div class="input-group">
+                <label for="rowCount">Threshold for opt-outs:</label>
+                <input type="number" id="rowCount" min="1" value="5">
+                <button id="thresholdButton" onclick="validateRowCount()">Set Threshold</button>
+            </div>
+            <div class="input-group">
+                <label for="outputFileName">Output file name:</label>
+                <input type="text" id="outputFileName" value="OptOuts" placeholder="Enter file name">
+                <span>.csv</span>
+            </div>
+            <div class="input-group">
+                <input type="file" id="csvFile" accept=".csv" multiple>
+                <button onclick="countPhoneNumbers()">Count Phone Numbers & Generate Opt-Outs</button>
+            </div>
         </div>
-        <div style="margin: 10px 0;">
-            <label for="outputFileName">Output file name:</label>
-            <input type="text" id="outputFileName" value="OptOuts" placeholder="Enter file name">
-            <span>.csv</span>
-        </div>
-        <input type="file" id="csvFile" accept=".csv" multiple>
-        <button onclick="countPhoneNumbers()">Count Phone Numbers & Generate Opt-Outs</button>
+
         <div id="phoneCount"></div>
         <div id="fileList" class="file-list"></div>
-
-        <script>
-            let displayRowCount = 5;  // Now used as threshold for opt-outs
-            let csvDataArray = [];  // Store all CSV data
-
-            function validateRowCount() {
-                const rowInput = document.getElementById('rowCount');
-                const thresholdButton = document.getElementById('thresholdButton');
-                const value = parseInt(rowInput.value);
-                
-                if (Number.isInteger(value) && value > 0) {
-                    displayRowCount = value;
-                    thresholdButton.textContent = "Threshold set! ✓";
-                    thresholdButton.classList.add('set');
-                } else {
-                    alert('Please enter a valid positive integer');
-                    rowInput.value = displayRowCount;  // Reset to last valid value
-                    thresholdButton.textContent = "Set Threshold";
-                    thresholdButton.classList.remove('set');
-                }
-            }
-
-            document.getElementById('csvFile').addEventListener('change', function(e) {
-                csvDataArray = [];  // Reset the array when new files are uploaded
-                const files = e.target.files;
-                const fileList = document.getElementById('fileList');
-                fileList.innerHTML = '';  // Clear previous displays
-
-                for (let file of files) {
-                    const reader = new FileReader();
-                    const preview = document.createElement('div');
-                    preview.className = 'csv-preview';
-                    preview.innerHTML = `<h3>${file.name}</h3>`;
-                    fileList.appendChild(preview);
-
-                    reader.onload = function(event) {
-                        const csvData = event.target.result;
-                        csvDataArray.push(csvData);  // Store the CSV data
-                        const rows = csvData.split('\n');
-                        const headers = rows[0].split(',');
-                        
-                        let table = '<table><thead><tr>';
-                        headers.forEach(header => {
-                            table += `<th>${header}</th>`;
-                        });
-                        table += '</tr></thead><tbody>';
-
-                        for (let i = 1; i < Math.min(rows.length, displayRowCount + 1); i++) {
-                            const cells = rows[i].split(',');
-                            table += '<tr>';
-                            cells.forEach(cell => {
-                                table += `<td>${cell}</td>`;
-                            });
-                            table += '</tr>';
-                        }
-                        table += '</tbody></table>';
-                        
-                        if (rows.length > displayRowCount + 1) {
-                            table += `<p>... (showing first ${displayRowCount} rows)</p>`;
-                        }
-                        
-                        preview.innerHTML += table;
-                    };
-
-                    reader.readAsText(file);
-                }
-            });
-
-            function countPhoneNumbers() {
-                const phoneCounts = {};
-                const optOuts = new Set();
-                const optOutDetails = new Map();
-                let phoneColumnIndex = -1;
-                let nameColumnIndex = -1;
-
-                csvDataArray.forEach(csvData => {
-                    const rows = csvData.split('\n');
-                    const headers = rows[0].split(',');
-                    
-                    // Find the Phone and Name column indices
-                    phoneColumnIndex = headers.findIndex(header => 
-                        header.trim().toLowerCase() === 'phone'
-                    );
-                    nameColumnIndex = headers.findIndex(header => 
-                        header.trim().toLowerCase() === 'name'
-                    );
-
-                    if (phoneColumnIndex === -1) {
-                        alert('No "Phone" column found in one or more CSV files');
-                        return;
-                    }
-                    if (nameColumnIndex === -1) {
-                        alert('No "Name" column found in one or more CSV files');
-                        return;
-                    }
-
-                    // Count phone numbers and collect names
-                    for (let i = 1; i < rows.length; i++) {
-                        const cells = rows[i].split(',');
-                        if (cells.length > Math.max(phoneColumnIndex, nameColumnIndex)) {
-                            const phoneNumber = cells[phoneColumnIndex].trim();
-                            const name = cells[nameColumnIndex].trim();
-                            if (phoneNumber) {
-                                phoneCounts[phoneNumber] = (phoneCounts[phoneNumber] || 0) + 1;
-                                if (phoneCounts[phoneNumber] >= displayRowCount) {
-                                    optOuts.add(phoneNumber);
-                                    optOutDetails.set(phoneNumber, name);
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Display results
-                const phoneCountDiv = document.getElementById('phoneCount');
-                if (Object.keys(phoneCounts).length === 0) {
-                    phoneCountDiv.innerHTML = '<p>No phone numbers found or no files uploaded.</p>';
-                    return;
-                }
-
-                let resultHtml = '<h3>Phone Number Counts:</h3><table>';
-                resultHtml += '<tr><th>Phone Number</th><th>Count</th></tr>';
-                
-                Object.entries(phoneCounts)
-                    .sort(([, a], [, b]) => b - a)
-                    .forEach(([phone, count]) => {
-                        resultHtml += `<tr><td>${phone}</td><td>${count}</td></tr>`;
-                    });
-                
-                resultHtml += '</table>';
-                phoneCountDiv.innerHTML = resultHtml;
-
-                // Generate CSV with custom filename
-                if (optOuts.size > 0) {
-                    let csvContent = "Name,Phone\n";
-                    optOuts.forEach(phone => {
-                        csvContent += `${optOutDetails.get(phone)},${phone}\n`;
-                    });
-
-                    const blob = new Blob([csvContent], { type: 'text/csv' });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    
-                    // Get custom filename or use default
-                    let fileName = document.getElementById('outputFileName').value.trim();
-                    fileName = fileName || 'OptOuts'; // Use 'OptOuts' if input is empty
-                    fileName = fileName.replace(/[^a-z0-9]/gi, '_'); // Replace invalid characters
-                    
-                    a.setAttribute('href', url);
-                    a.setAttribute('download', `${fileName}.csv`);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                }
-            }
-
-            // Add these modal functions
-            function openModal() {
-                document.getElementById('helpModal').style.display = 'block';
-            }
-
-            function closeModal() {
-                document.getElementById('helpModal').style.display = 'none';
-            }
-
-            // Close modal when clicking outside of it
-            window.onclick = function(event) {
-                const modal = document.getElementById('helpModal');
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        </script>
-
     </main>
 
     <footer>
         <p>&copy; 2024 Jeremy Is Awesome. Hosted on GitHub Pages.</p>
     </footer>
+
+    <script>
+        let displayRowCount = 5;  // Now used as threshold for opt-outs
+        let csvDataArray = [];  // Store all CSV data
+
+        function validateRowCount() {
+            const rowInput = document.getElementById('rowCount');
+            const thresholdButton = document.getElementById('thresholdButton');
+            const value = parseInt(rowInput.value);
+            
+            if (Number.isInteger(value) && value > 0) {
+                displayRowCount = value;
+                thresholdButton.textContent = "Threshold set! ✓";
+                thresholdButton.classList.add('set');
+            } else {
+                alert('Please enter a valid positive integer');
+                rowInput.value = displayRowCount;  // Reset to last valid value
+                thresholdButton.textContent = "Set Threshold";
+                thresholdButton.classList.remove('set');
+            }
+        }
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            csvDataArray = [];  // Reset the array when new files are uploaded
+            const files = e.target.files;
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';  // Clear previous displays
+
+            for (let file of files) {
+                const reader = new FileReader();
+                const preview = document.createElement('div');
+                preview.className = 'csv-preview';
+                preview.innerHTML = `<h3>${file.name}</h3>`;
+                fileList.appendChild(preview);
+
+                reader.onload = function(event) {
+                    const csvData = event.target.result;
+                    csvDataArray.push(csvData);  // Store the CSV data
+                    const rows = csvData.split('\n');
+                    const headers = rows[0].split(',');
+                    
+                    let table = '<table><thead><tr>';
+                    headers.forEach(header => {
+                        table += `<th>${header}</th>`;
+                    });
+                    table += '</tr></thead><tbody>';
+
+                    for (let i = 1; i < Math.min(rows.length, displayRowCount + 1); i++) {
+                        const cells = rows[i].split(',');
+                        table += '<tr>';
+                        cells.forEach(cell => {
+                            table += `<td>${cell}</td>`;
+                        });
+                        table += '</tr>';
+                    }
+                    table += '</tbody></table>';
+                    
+                    if (rows.length > displayRowCount + 1) {
+                        table += `<p>... (showing first ${displayRowCount} rows)</p>`;
+                    }
+                    
+                    preview.innerHTML += table;
+                };
+
+                reader.readAsText(file);
+            }
+        });
+
+        function countPhoneNumbers() {
+            const phoneCounts = {};
+            const optOuts = new Set();
+            const optOutDetails = new Map();
+            let phoneColumnIndex = -1;
+            let nameColumnIndex = -1;
+
+            csvDataArray.forEach(csvData => {
+                const rows = csvData.split('\n');
+                const headers = rows[0].split(',');
+                
+                // Find the Phone and Name column indices
+                phoneColumnIndex = headers.findIndex(header => 
+                    header.trim().toLowerCase() === 'phone'
+                );
+                nameColumnIndex = headers.findIndex(header => 
+                    header.trim().toLowerCase() === 'name'
+                );
+
+                if (phoneColumnIndex === -1) {
+                    alert('No "Phone" column found in one or more CSV files');
+                    return;
+                }
+                if (nameColumnIndex === -1) {
+                    alert('No "Name" column found in one or more CSV files');
+                    return;
+                }
+
+                // Count phone numbers and collect names
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].split(',');
+                    if (cells.length > Math.max(phoneColumnIndex, nameColumnIndex)) {
+                        const phoneNumber = cells[phoneColumnIndex].trim();
+                        const name = cells[nameColumnIndex].trim();
+                        if (phoneNumber) {
+                            phoneCounts[phoneNumber] = (phoneCounts[phoneNumber] || 0) + 1;
+                            if (phoneCounts[phoneNumber] >= displayRowCount) {
+                                optOuts.add(phoneNumber);
+                                optOutDetails.set(phoneNumber, name);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Display results
+            const phoneCountDiv = document.getElementById('phoneCount');
+            if (Object.keys(phoneCounts).length === 0) {
+                phoneCountDiv.innerHTML = '<p>No phone numbers found or no files uploaded.</p>';
+                return;
+            }
+
+            let resultHtml = '<h3>Phone Number Counts:</h3><table>';
+            resultHtml += '<tr><th>Phone Number</th><th>Count</th></tr>';
+            
+            Object.entries(phoneCounts)
+                .sort(([, a], [, b]) => b - a)
+                .forEach(([phone, count]) => {
+                    resultHtml += `<tr><td>${phone}</td><td>${count}</td></tr>`;
+                });
+            
+            resultHtml += '</table>';
+            phoneCountDiv.innerHTML = resultHtml;
+
+            // Generate CSV with custom filename
+            if (optOuts.size > 0) {
+                let csvContent = "Name,Phone\n";
+                optOuts.forEach(phone => {
+                    csvContent += `${optOutDetails.get(phone)},${phone}\n`;
+                });
+
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                // Get custom filename or use default
+                let fileName = document.getElementById('outputFileName').value.trim();
+                fileName = fileName || 'OptOuts'; // Use 'OptOuts' if input is empty
+                fileName = fileName.replace(/[^a-z0-9]/gi, '_'); // Replace invalid characters
+                
+                a.setAttribute('href', url);
+                a.setAttribute('download', `${fileName}.csv`);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        }
+
+        // Add these modal functions
+        function openModal() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('helpModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
