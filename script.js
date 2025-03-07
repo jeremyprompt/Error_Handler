@@ -83,7 +83,17 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 function countPhoneNumbers() {
     console.log("Function started");
     
-    // First ensure all UI elements exist
+    // Get the threshold value from the original input
+    const thresholdValue = document.getElementById('thresholdInput').value;
+    const threshold = parseInt(thresholdValue);
+    
+    if (isNaN(threshold)) {
+        alert('Please enter a valid threshold number');
+        return;
+    }
+    console.log("Using threshold value:", threshold);
+
+    // Create container if needed
     if (!document.querySelector('.container')) {
         const container = document.createElement('div');
         container.className = 'container';
@@ -91,27 +101,12 @@ function countPhoneNumbers() {
     }
     const container = document.querySelector('.container');
 
-    // Get the threshold from the existing input in the HTML
-    const existingThreshold = document.getElementById('threshold')?.value;
-    
-    if (!document.getElementById('threshold')) {
-        const thresholdInput = document.createElement('input');
-        thresholdInput.id = 'threshold';
-        thresholdInput.type = 'number';
-        thresholdInput.value = existingThreshold || '1';
-        container.appendChild(thresholdInput);
-    }
-
+    // Create result div if needed
     if (!document.getElementById('result')) {
         const resultDiv = document.createElement('div');
         resultDiv.id = 'result';
         container.appendChild(resultDiv);
     }
-
-    // Now get the threshold value after ensuring the input exists
-    const thresholdInput = document.getElementById('threshold');
-    const threshold = parseInt(thresholdInput.value) || 1;
-    console.log("Using threshold value:", threshold);
 
     const phoneCounts = {};
     const optOuts = new Set();
