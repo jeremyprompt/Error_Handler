@@ -85,15 +85,11 @@ function countPhoneNumbers() {
     
     const phoneCounts = {};
     const optOuts = new Set();
-    const namesByPhone = new Map();  // Store names here
-    
-    console.log("Processing CSV files...");
-    console.log("Number of CSV files:", csvDataArray.length);
+    const namesByPhone = new Map();
     
     csvDataArray.forEach((csvData, index) => {
         console.log(`Processing CSV file ${index + 1}`);
         const rows = csvData.split('\n');
-        console.log(`Total rows in file: ${rows.length}`);
         
         // Find the header row containing "Name" and "Phone"
         let headerRowIndex = -1;
@@ -103,15 +99,13 @@ function countPhoneNumbers() {
             const hasPhone = columns.some(col => col.trim() === 'Phone');
             if (hasName && hasPhone) {
                 headerRowIndex = i;
-                console.log(`Found headers at row ${i + 1}`);
-                console.log('Headers:', columns);  // Log the header row
+                console.log(`Found headers at row ${i + 1}:`, columns);
                 break;
             }
         }
 
         if (headerRowIndex === -1) {
             console.error('No row containing both "Name" and "Phone" found');
-            alert('No row containing both "Name" and "Phone" found in one or more CSV files');
             return;
         }
 
@@ -126,67 +120,59 @@ function countPhoneNumbers() {
         console.log(`Phone column index: ${phoneColumnIndex}, Name column index: ${nameColumnIndex}`);
 
         // Process only rows after the header row
-        console.log("Processing data rows...");
-        let processedRows = 0;
         for (let i = headerRowIndex + 1; i < rows.length; i++) {
             const row = rows[i].trim();
             if (row) {
                 const columns = row.split(',');
+                // Log a sample of the data being processed
+                if (i === headerRowIndex + 1) {
+                    console.log("Sample row:", columns);
+                }
+                
                 const phone = columns[phoneColumnIndex]?.trim() || '';
                 const name = columns[nameColumnIndex]?.trim() || '';
                 
-                if (phone) {
+                if (phone && name) {  // Only store if both phone and name exist
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
                     namesByPhone.set(phone, name);
-                    console.log(`Stored name "${name}" for phone "${phone}"`);  // Log name storage
-                    if (phone.toLowerCase().includes('opt')) {
-                        optOuts.add(phone);
-                    }
-                    processedRows++;
                 }
             }
         }
-        console.log(`Processed ${processedRows} data rows`);
-        console.log('Names stored:', Array.from(namesByPhone.entries()));  // Log all stored names
     });
 
-    console.log("Getting threshold value...");
-    const thresholdElement = document.getElementById('rowCount');
-    console.log("Threshold element:", thresholdElement);
-    const threshold = parseInt(thresholdElement?.value) || 1;
+    const threshold = parseInt(document.getElementById('rowCount').value) || 1;
     console.log("Using threshold:", threshold);
 
     // Generate output
-    console.log("Generating output...");
     let displayContent = '';
     let csvContent = 'Name,Phone,Count\n';
     let totalCount = 0;
 
+    // Log the stored names before processing
+    console.log("Stored names:", Array.from(namesByPhone.entries()));
+
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
             const name = namesByPhone.get(phone);
-            console.log(`Retrieved name "${name}" for phone "${phone}"`);  // Log name retrieval
+            console.log(`Processing: Phone=${phone}, Name=${name}, Count=${count}`);
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
             totalCount++;
         }
     }
-    console.log(`Found ${totalCount} entries meeting threshold`);
-    console.log('Final CSV content:', csvContent);  // Log final CSV content
 
-    // Display results
-    console.log("Displaying results...");
-    const resultDiv = document.getElementById('result');
-    if (resultDiv) {
-        resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
-        resultDiv.style.whiteSpace = 'pre-line';
-        console.log("Results displayed in browser");
-    } else {
-        console.error("Could not find result div");
+    // Create result div if it doesn't exist
+    let resultDiv = document.getElementById('result');
+    if (!resultDiv) {
+        resultDiv = document.createElement('div');
+        resultDiv.id = 'result';
+        document.body.appendChild(resultDiv);
     }
+    
+    resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
+    resultDiv.style.whiteSpace = 'pre-line';
 
     // Generate and download CSV
-    console.log("Generating CSV file...");
     const outputFileName = document.getElementById('outputFileName')?.value || 'phone_numbers_above_threshold';
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -197,8 +183,6 @@ function countPhoneNumbers() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    console.log("Function completed");
 }
 
 // Modal functions
