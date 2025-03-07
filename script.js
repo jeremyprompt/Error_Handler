@@ -81,7 +81,6 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 });
 
 function countPhoneNumbers() {
-    console.log("Function started");
     
     const phoneCounts = {};
     const optOuts = new Set();
@@ -148,29 +147,15 @@ function countPhoneNumbers() {
     let csvContent = 'Name,Phone,Count\n';
     let totalCount = 0;
 
-    // Log the stored names before processing
-    console.log("Stored names:", Array.from(namesByPhone.entries()));
 
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
             const name = namesByPhone.get(phone);
-            console.log(`Processing: Phone=${phone}, Name=${name}, Count=${count}`);
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
             totalCount++;
         }
     }
-
-    // Create result div if it doesn't exist
-    let resultDiv = document.getElementById('result');
-    if (!resultDiv) {
-        resultDiv = document.createElement('div');
-        resultDiv.id = 'result';
-        document.body.appendChild(resultDiv);
-    }
-    
-    resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
-    resultDiv.style.whiteSpace = 'pre-line';
 
     // Generate and download CSV
     const outputFileName = document.getElementById('outputFileName')?.value || 'phone_numbers_above_threshold';
@@ -201,3 +186,4 @@ window.onclick = function(event) {
         modal.style.display = 'none';
     }
 }
+
