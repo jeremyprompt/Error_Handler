@@ -84,27 +84,31 @@ function countPhoneNumbers() {
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
-    let phoneColumnIndex = -1;
-    let nameColumnIndex = -1;
-
+    
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
         const headers = rows[0].split(',');
         
-        // Find the Phone and Name column indices
-        phoneColumnIndex = headers.findIndex(header => 
-            header.trim().toLowerCase() === 'phone'
-        );
-        nameColumnIndex = headers.findIndex(header => 
-            header.trim().toLowerCase() === 'name'
-        );
+        // Find columns containing "phone" and "name"
+        let phoneColumnIndex = -1;
+        let nameColumnIndex = -1;
+        
+        headers.forEach((header, index) => {
+            const headerLower = header.trim().toLowerCase();
+            if (headerLower.includes('phone')) {
+                phoneColumnIndex = index;
+            }
+            if (headerLower.includes('name')) {
+                nameColumnIndex = index;
+            }
+        });
 
         if (phoneColumnIndex === -1) {
-            alert('No "Phone" column found in one or more CSV files');
+            alert('No column containing "phone" found in one or more CSV files');
             return;
         }
         if (nameColumnIndex === -1) {
-            alert('No "Name" column found in one or more CSV files');
+            alert('No column containing "name" found in one or more CSV files');
             return;
         }
 
