@@ -81,10 +81,26 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 });
 
 function countPhoneNumbers() {
+    console.log("Function started");
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
     const namesByPhone = new Map();
+    
+    // Get threshold value first to ensure it exists
+    const thresholdInput = document.getElementById('threshold');
+    if (!thresholdInput) {
+        console.error("Threshold input not found");
+        return;
+    }
+    const threshold = parseInt(thresholdInput.value) || 1;
+    console.log("Threshold:", threshold);
+
+    if (!csvDataArray || csvDataArray.length === 0) {
+        console.error("No CSV data found");
+        return;
+    }
+    console.log("Processing CSV data");
     
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
@@ -135,15 +151,12 @@ function countPhoneNumbers() {
         }
     });
 
-    // Get threshold value
-    const thresholdInput = document.getElementById('threshold');
-    const threshold = parseInt(thresholdInput.value) || 1;
-
     // Generate output for browser display and CSV
     let displayContent = '';
     let csvContent = 'Name,Phone,Count\n';
     let totalCount = 0;
 
+    console.log("Generating output");
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
             const name = namesByPhone.get(phone) || '';
@@ -152,23 +165,37 @@ function countPhoneNumbers() {
             totalCount++;
         }
     }
+    console.log("Total matches found:", totalCount);
+
+    // Try to find the container element
+    const container = document.querySelector('.container');
+    if (!container) {
+        console.error("Container not found, creating one");
+        const newContainer = document.createElement('div');
+        newContainer.className = 'container';
+        document.body.appendChild(newContainer);
+    }
 
     // Create or get the result div
     let resultDiv = document.getElementById('result');
     if (!resultDiv) {
+        console.log("Creating new result div");
         resultDiv = document.createElement('div');
         resultDiv.id = 'result';
-        document.body.appendChild(resultDiv);
+        const container = document.querySelector('.container') || document.body;
+        container.appendChild(resultDiv);
     }
     
+    console.log("Displaying results");
     // Display results in browser
     resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
     resultDiv.style.whiteSpace = 'pre-line';
 
     // Get custom filename or use default
-    const outputFileName = document.getElementById('outputFileName').value || 'phone_numbers_above_threshold';
+    const outputFileName = document.getElementById('outputFileName')?.value || 'phone_numbers_above_threshold';
     
     // Create and download the CSV file
+    console.log("Creating CSV file");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -178,6 +205,7 @@ function countPhoneNumbers() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    console.log("Function completed");
 }
 
 // Modal functions
