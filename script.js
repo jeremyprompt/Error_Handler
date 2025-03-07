@@ -81,6 +81,42 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 });
 
 function countPhoneNumbers() {
+    console.log("Function started");
+    
+    // Wait for DOM to be ready
+    if (!document.readyState === 'complete') {
+        console.error("DOM not ready");
+        return;
+    }
+    
+    // Get the threshold value from the correct input ID and validate it exists
+    const thresholdInput = document.querySelector('#rowCount');
+    console.log("Threshold input element:", thresholdInput);
+    
+    if (!thresholdInput) {
+        console.error("Could not find threshold input with ID 'rowCount'");
+        alert("Please ensure the threshold is set before processing");
+        return;
+    }
+    
+    const threshold = parseInt(thresholdInput.value) || 1;  // Default to 1 if parsing fails
+    console.log("Using threshold value:", threshold);
+
+    // Create container if needed
+    if (!document.querySelector('.container')) {
+        const container = document.createElement('div');
+        container.className = 'container';
+        document.body.appendChild(container);
+    }
+    const container = document.querySelector('.container');
+
+    // Create result div if needed
+    if (!document.getElementById('result')) {
+        const resultDiv = document.createElement('div');
+        resultDiv.id = 'result';
+        container.appendChild(resultDiv);
+    }
+
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
@@ -132,9 +168,6 @@ function countPhoneNumbers() {
             }
         }
     });
-
-    // Get threshold value
-    const threshold = parseInt(document.getElementById('rowCount').value) || 1;
 
     // Generate output
     let displayContent = '';
