@@ -125,7 +125,7 @@ function countPhoneNumbers() {
                 
                 if (phone) {
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
-                    namesByPhone.set(phone, name); // Store the name
+                    namesByPhone.set(phone, name);
                     if (phone.toLowerCase().includes('opt')) {
                         optOuts.add(phone);
                         optOutDetails.set(phone, name);
@@ -135,13 +135,17 @@ function countPhoneNumbers() {
         }
     });
 
+    // Get threshold value
+    const thresholdInput = document.getElementById('threshold');
+    const threshold = parseInt(thresholdInput.value) || 1;
+
     // Generate output for browser display and CSV
     let displayContent = '';
     let csvContent = 'Name,Phone,Count\n';
     let totalCount = 0;
 
     for (const [phone, count] of Object.entries(phoneCounts)) {
-        if (count >= displayRowCount) {
+        if (count >= threshold) {
             const name = namesByPhone.get(phone) || '';
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
@@ -152,7 +156,7 @@ function countPhoneNumbers() {
     // Display results in browser
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
-    resultDiv.style.whiteSpace = 'pre-line';  // Preserve line breaks
+    resultDiv.style.whiteSpace = 'pre-line';
 
     // Get custom filename or use default
     const outputFileName = document.getElementById('outputFileName').value || 'phone_numbers_above_threshold';
