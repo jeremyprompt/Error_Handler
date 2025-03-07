@@ -83,21 +83,24 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 function countPhoneNumbers() {
     console.log("Function started");
     
-    // Get the threshold value from the correct input ID
-    const thresholdInput = document.getElementById('rowCount');
+    // Wait for DOM to be ready
+    if (!document.readyState === 'complete') {
+        console.error("DOM not ready");
+        return;
+    }
+    
+    // Get the threshold value from the correct input ID and validate it exists
+    const thresholdInput = document.querySelector('#rowCount');
+    console.log("Threshold input element:", thresholdInput);
     
     if (!thresholdInput) {
-        console.error("Could not find threshold input element");
+        console.error("Could not find threshold input with ID 'rowCount'");
+        alert("Please ensure the threshold is set before processing");
         return;
     }
     
-    const threshold = parseInt(thresholdInput.value);
+    const threshold = parseInt(thresholdInput.value) || 1;  // Default to 1 if parsing fails
     console.log("Using threshold value:", threshold);
-    
-    if (isNaN(threshold)) {
-        alert('Please enter a valid threshold number');
-        return;
-    }
 
     // Create container if needed
     if (!document.querySelector('.container')) {
