@@ -84,7 +84,7 @@ function countPhoneNumbers() {
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
-    const namesByPhone = new Map(); // Add this to store names for each phone number
+    const namesByPhone = new Map();
     
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
@@ -135,21 +135,34 @@ function countPhoneNumbers() {
         }
     });
 
-    // Generate CSV for numbers that meet the threshold
+    // Generate output for browser display and CSV
+    let displayContent = '';
     let csvContent = 'Name,Phone,Count\n';
+    let totalCount = 0;
+
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= displayRowCount) {
             const name = namesByPhone.get(phone) || '';
             csvContent += `${name},${phone},${count}\n`;
+            displayContent += `${name}: ${phone} (${count} times)\n`;
+            totalCount++;
         }
     }
 
+    // Display results in browser
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
+    resultDiv.style.whiteSpace = 'pre-line';  // Preserve line breaks
+
+    // Get custom filename or use default
+    const outputFileName = document.getElementById('outputFileName').value || 'phone_numbers_above_threshold';
+    
     // Create and download the CSV file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', 'phone_numbers_above_threshold.csv');
+    link.setAttribute('download', `${outputFileName}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
