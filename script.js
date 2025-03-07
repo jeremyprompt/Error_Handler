@@ -91,11 +91,14 @@ function countPhoneNumbers() {
     }
     const container = document.querySelector('.container');
 
+    // Get the threshold from the existing input in the HTML
+    const existingThreshold = document.getElementById('threshold')?.value;
+    
     if (!document.getElementById('threshold')) {
         const thresholdInput = document.createElement('input');
         thresholdInput.id = 'threshold';
         thresholdInput.type = 'number';
-        thresholdInput.value = '1';
+        thresholdInput.value = existingThreshold || '1';
         container.appendChild(thresholdInput);
     }
 
@@ -108,7 +111,7 @@ function countPhoneNumbers() {
     // Now get the threshold value after ensuring the input exists
     const thresholdInput = document.getElementById('threshold');
     const threshold = parseInt(thresholdInput.value) || 1;
-    console.log("Threshold:", threshold);
+    console.log("Using threshold value:", threshold);
 
     const phoneCounts = {};
     const optOuts = new Set();
