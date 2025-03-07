@@ -82,20 +82,39 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 
 function countPhoneNumbers() {
     console.log("Function started");
+    
+    // Create UI elements if they don't exist
+    let container = document.querySelector('.container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'container';
+        document.body.appendChild(container);
+    }
+
+    let thresholdInput = document.getElementById('threshold');
+    if (!thresholdInput) {
+        thresholdInput = document.createElement('input');
+        thresholdInput.id = 'threshold';
+        thresholdInput.type = 'number';
+        thresholdInput.value = '1';
+        container.appendChild(thresholdInput);
+    }
+
+    let resultDiv = document.getElementById('result');
+    if (!resultDiv) {
+        resultDiv = document.createElement('div');
+        resultDiv.id = 'result';
+        container.appendChild(resultDiv);
+    }
+
+    const threshold = parseInt(thresholdInput.value) || 1;
+    console.log("Threshold:", threshold);
+
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
     const namesByPhone = new Map();
     
-    // Get threshold value first to ensure it exists
-    const thresholdInput = document.getElementById('threshold');
-    if (!thresholdInput) {
-        console.error("Threshold input not found");
-        return;
-    }
-    const threshold = parseInt(thresholdInput.value) || 1;
-    console.log("Threshold:", threshold);
-
     if (!csvDataArray || csvDataArray.length === 0) {
         console.error("No CSV data found");
         return;
@@ -167,25 +186,6 @@ function countPhoneNumbers() {
     }
     console.log("Total matches found:", totalCount);
 
-    // Try to find the container element
-    const container = document.querySelector('.container');
-    if (!container) {
-        console.error("Container not found, creating one");
-        const newContainer = document.createElement('div');
-        newContainer.className = 'container';
-        document.body.appendChild(newContainer);
-    }
-
-    // Create or get the result div
-    let resultDiv = document.getElementById('result');
-    if (!resultDiv) {
-        console.log("Creating new result div");
-        resultDiv = document.createElement('div');
-        resultDiv.id = 'result';
-        const container = document.querySelector('.container') || document.body;
-        container.appendChild(resultDiv);
-    }
-    
     console.log("Displaying results");
     // Display results in browser
     resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
