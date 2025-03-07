@@ -84,6 +84,7 @@ function countPhoneNumbers() {
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
+    const namesByPhone = new Map(); // Add this to store names for each phone number
     
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
@@ -124,6 +125,7 @@ function countPhoneNumbers() {
                 
                 if (phone) {
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+                    namesByPhone.set(phone, name); // Store the name
                     if (phone.toLowerCase().includes('opt')) {
                         optOuts.add(phone);
                         optOutDetails.set(phone, name);
@@ -133,52 +135,25 @@ function countPhoneNumbers() {
         }
     });
 
-    // Display results
-    const phoneCountDiv = document.getElementById('phoneCount');
-    const countResults = document.getElementById('countResults');
-    
-    if (Object.keys(phoneCounts).length === 0) {
-        phoneCountDiv.innerHTML = '<p>No phone numbers found or no files uploaded.</p>';
-        return;
+    // Generate CSV for numbers that meet the threshold
+    let csvContent = 'Name,Phone,Count\n';
+    for (const [phone, count] of Object.entries(phoneCounts)) {
+        if (count >= displayRowCount) {
+            const name = namesByPhone.get(phone) || '';
+            csvContent += `${name},${phone},${count}\n`;
+        }
     }
 
-    let resultHtml = '<table>';
-    resultHtml += '<tr><th>Phone Number</th><th>Count</th></tr>';
-    
-    Object.entries(phoneCounts)
-        .sort(([, a], [, b]) => b - a)
-        .forEach(([phone, count]) => {
-            resultHtml += `<tr><td>${phone}</td><td>${count}</td></tr>`;
-        });
-    
-    resultHtml += '</table>';
-    phoneCountDiv.innerHTML = resultHtml;
-    
-    // Update the collapsible button text to show count
-    const totalNumbers = Object.keys(phoneCounts).length;
-    countResults.textContent = `View Phone Number Counts (${totalNumbers} total)`;
-    
-    // Generate CSV with custom filename
-    if (optOuts.size > 0) {
-        let csvContent = "Name,Phone\n";
-        optOuts.forEach(phone => {
-            csvContent += `${optOutDetails.get(phone)},${phone}\n`;
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        
-        // Get custom filename or use default
-        let fileName = document.getElementById('outputFileName').value.trim();
-        fileName = fileName || 'OptOuts'; // Use 'OptOuts' if input is empty
-        fileName = fileName.replace(/[^a-z0-9]/gi, '_'); // Replace invalid characters
-        
-        a.setAttribute('href', url);
-        a.setAttribute('download', `${fileName}.csv`);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'phone_numbers_above_threshold.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Modal functions
