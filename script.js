@@ -85,7 +85,7 @@ function countPhoneNumbers() {
     
     const phoneCounts = {};
     const optOuts = new Set();
-    const namesByPhone = new Map();
+    const namesByPhone = new Map();  // Store names here
     
     console.log("Processing CSV files...");
     console.log("Number of CSV files:", csvDataArray.length);
@@ -104,6 +104,7 @@ function countPhoneNumbers() {
             if (hasName && hasPhone) {
                 headerRowIndex = i;
                 console.log(`Found headers at row ${i + 1}`);
+                console.log('Headers:', columns);  // Log the header row
                 break;
             }
         }
@@ -137,6 +138,7 @@ function countPhoneNumbers() {
                 if (phone) {
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
                     namesByPhone.set(phone, name);
+                    console.log(`Stored name "${name}" for phone "${phone}"`);  // Log name storage
                     if (phone.toLowerCase().includes('opt')) {
                         optOuts.add(phone);
                     }
@@ -145,6 +147,7 @@ function countPhoneNumbers() {
             }
         }
         console.log(`Processed ${processedRows} data rows`);
+        console.log('Names stored:', Array.from(namesByPhone.entries()));  // Log all stored names
     });
 
     console.log("Getting threshold value...");
@@ -161,13 +164,15 @@ function countPhoneNumbers() {
 
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
-            const name = namesByPhone.get(phone) || '';
+            const name = namesByPhone.get(phone);
+            console.log(`Retrieved name "${name}" for phone "${phone}"`);  // Log name retrieval
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
             totalCount++;
         }
     }
     console.log(`Found ${totalCount} entries meeting threshold`);
+    console.log('Final CSV content:', csvContent);  // Log final CSV content
 
     // Display results
     console.log("Displaying results...");
