@@ -153,8 +153,15 @@ function countPhoneNumbers() {
         }
     }
 
+    // Create or get the result div
+    let resultDiv = document.getElementById('result');
+    if (!resultDiv) {
+        resultDiv = document.createElement('div');
+        resultDiv.id = 'result';
+        document.body.appendChild(resultDiv);
+    }
+    
     // Display results in browser
-    const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = `Total contacts meeting or exceeding threshold: ${totalCount}\n\n${displayContent}`;
     resultDiv.style.whiteSpace = 'pre-line';
 
