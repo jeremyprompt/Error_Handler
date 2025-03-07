@@ -87,42 +87,46 @@ function countPhoneNumbers() {
     
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
-        const headers = rows[0].split(',');
         
-        // Find columns containing "phone" and "name"
-        let phoneColumnIndex = -1;
-        let nameColumnIndex = -1;
-        
-        headers.forEach((header, index) => {
-            const headerLower = header.trim().toLowerCase();
-            if (headerLower.includes('phone')) {
-                phoneColumnIndex = index;
+        // Find the header row containing "Name" and "Phone"
+        let headerRowIndex = -1;
+        for (let i = 0; i < rows.length; i++) {
+            const columns = rows[i].split(',');
+            const hasName = columns.some(col => col.trim() === 'Name');
+            const hasPhone = columns.some(col => col.trim() === 'Phone');
+            if (hasName && hasPhone) {
+                headerRowIndex = i;
+                break;
             }
-            if (headerLower.includes('name')) {
-                nameColumnIndex = index;
-            }
-        });
-
-        if (phoneColumnIndex === -1) {
-            alert('No column containing "phone" found in one or more CSV files');
-            return;
         }
-        if (nameColumnIndex === -1) {
-            alert('No column containing "name" found in one or more CSV files');
+
+        if (headerRowIndex === -1) {
+            alert('No row containing both "Name" and "Phone" found in one or more CSV files');
             return;
         }
 
-        // Count phone numbers and collect names
-        for (let i = 1; i < rows.length; i++) {
-            const cells = rows[i].split(',');
-            if (cells.length > Math.max(phoneColumnIndex, nameColumnIndex)) {
-                const phoneNumber = cells[phoneColumnIndex].trim();
-                const name = cells[nameColumnIndex].trim();
-                if (phoneNumber) {
-                    phoneCounts[phoneNumber] = (phoneCounts[phoneNumber] || 0) + 1;
-                    if (phoneCounts[phoneNumber] >= displayRowCount) {
-                        optOuts.add(phoneNumber);
-                        optOutDetails.set(phoneNumber, name);
+        // Get headers from the identified header row
+        const headers = rows[headerRowIndex].split(',');
+        const phoneColumnIndex = headers.findIndex(header => 
+            header.trim() === 'Phone'
+        );
+        const nameColumnIndex = headers.findIndex(header => 
+            header.trim() === 'Name'
+        );
+
+        // Process only rows after the header row
+        for (let i = headerRowIndex + 1; i < rows.length; i++) {
+            const row = rows[i].trim();
+            if (row) {  // Skip empty rows
+                const columns = row.split(',');
+                const phone = columns[phoneColumnIndex]?.trim() || '';
+                const name = columns[nameColumnIndex]?.trim() || '';
+                
+                if (phone) {
+                    phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+                    if (phone.toLowerCase().includes('opt')) {
+                        optOuts.add(phone);
+                        optOutDetails.set(phone, name);
                     }
                 }
             }
