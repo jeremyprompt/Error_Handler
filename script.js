@@ -81,52 +81,9 @@ document.getElementById('csvFile').addEventListener('change', function(e) {
 });
 
 function countPhoneNumbers() {
-    console.log("Function started");
-    
-    // Wait for DOM to be ready
-    if (!document.readyState === 'complete') {
-        console.error("DOM not ready");
-        return;
-    }
-    
-    // Get the threshold value from the correct input ID and validate it exists
-    const thresholdInput = document.querySelector('#rowCount');
-    console.log("Threshold input element:", thresholdInput);
-    
-    if (!thresholdInput) {
-        console.error("Could not find threshold input with ID 'rowCount'");
-        alert("Please ensure the threshold is set before processing");
-        return;
-    }
-    
-    const threshold = parseInt(thresholdInput.value) || 1;  // Default to 1 if parsing fails
-    console.log("Using threshold value:", threshold);
-
-    // Create container if needed
-    if (!document.querySelector('.container')) {
-        const container = document.createElement('div');
-        container.className = 'container';
-        document.body.appendChild(container);
-    }
-    const container = document.querySelector('.container');
-
-    // Create result div if needed
-    if (!document.getElementById('result')) {
-        const resultDiv = document.createElement('div');
-        resultDiv.id = 'result';
-        container.appendChild(resultDiv);
-    }
-
     const phoneCounts = {};
     const optOuts = new Set();
     const optOutDetails = new Map();
-    const namesByPhone = new Map();
-    
-    if (!csvDataArray || csvDataArray.length === 0) {
-        console.error("No CSV data found");
-        return;
-    }
-    console.log("Processing CSV data");
     
     csvDataArray.forEach(csvData => {
         const rows = csvData.split('\n');
@@ -167,7 +124,6 @@ function countPhoneNumbers() {
                 
                 if (phone) {
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
-                    namesByPhone.set(phone, name);
                     if (phone.toLowerCase().includes('opt')) {
                         optOuts.add(phone);
                         optOutDetails.set(phone, name);
@@ -177,6 +133,9 @@ function countPhoneNumbers() {
         }
     });
 
+    // Get threshold value
+    const threshold = parseInt(document.getElementById('rowCount').value) || 1;
+
     // Generate output
     let displayContent = '';
     let csvContent = 'Name,Phone,Count\n';
@@ -184,7 +143,7 @@ function countPhoneNumbers() {
 
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
-            const name = namesByPhone.get(phone) || '';
+            const name = optOutDetails.get(phone) || '';
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
             totalCount++;
@@ -197,7 +156,7 @@ function countPhoneNumbers() {
     resultDiv.style.whiteSpace = 'pre-line';
 
     // Generate and download CSV
-    const outputFileName = document.getElementById('outputFileName')?.value || 'phone_numbers_above_threshold';
+    const outputFileName = document.getElementById('outputFileName').value || 'phone_numbers_above_threshold';
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -207,8 +166,6 @@ function countPhoneNumbers() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    console.log("Function completed");
 }
 
 // Modal functions
