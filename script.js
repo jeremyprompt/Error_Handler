@@ -85,7 +85,7 @@ function countPhoneNumbers() {
     
     const phoneCounts = {};
     const optOuts = new Set();
-    const optOutDetails = new Map();
+    const namesByPhone = new Map();
     
     console.log("Processing CSV files...");
     console.log("Number of CSV files:", csvDataArray.length);
@@ -136,9 +136,9 @@ function countPhoneNumbers() {
                 
                 if (phone) {
                     phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+                    namesByPhone.set(phone, name);
                     if (phone.toLowerCase().includes('opt')) {
                         optOuts.add(phone);
-                        optOutDetails.set(phone, name);
                     }
                     processedRows++;
                 }
@@ -161,7 +161,7 @@ function countPhoneNumbers() {
 
     for (const [phone, count] of Object.entries(phoneCounts)) {
         if (count >= threshold) {
-            const name = optOutDetails.get(phone) || '';
+            const name = namesByPhone.get(phone) || '';
             csvContent += `${name},${phone},${count}\n`;
             displayContent += `${name}: ${phone} (${count} times)\n`;
             totalCount++;
